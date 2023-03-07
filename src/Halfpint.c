@@ -10,6 +10,10 @@
 #include <sys/ioctl.h>
 #include <string.h>
 
+#define UP 'k'
+#define DOWN 'j'
+#define LEFT 'h'
+#define RIGHT 'l'
 
 void Halfpint_Init(Halfpint *halfpint)
 {
@@ -70,17 +74,21 @@ void Halfpint_MoveCursor(Halfpint *halfpint, char key)
 {
     switch (key)
     {
-        case 'h': // left
-            halfpint->cursorX--;
+        case LEFT: 
+            if (halfpint->cursorX != 0)
+                halfpint->cursorX--;
             break;
-        case 'j': // down
-            halfpint->cursorY++;
+        case DOWN: 
+            if (halfpint->cursorY != halfpint->rows - 1)
+                halfpint->cursorY++;
             break;
-        case 'k': // up
-            halfpint->cursorY--;
+        case UP: 
+            if (halfpint->cursorY != 0)
+                halfpint->cursorY--;
             break;
-        case 'l': // right
-            halfpint->cursorX++;
+        case RIGHT: 
+            if (halfpint->cursorX != halfpint->cols - 1)
+                halfpint->cursorX++;
             break;
     }
 }
@@ -92,6 +100,32 @@ char Halfpint_ReadKey(Halfpint *g_halfpint)
 
     while ((nread = read(STDIN_FILENO, &c, 1)) != 1)
         if (nread == -1 && errno != EAGAIN) die("read");
+
+    if (c == '\x1b') 
+    {
+        char seq[3];
+
+        if (read(STDIN_FILENO, &seq[0], 1) != 1) return '\x1b';
+        if (read(STDIN_FILENO, &seq[1], 1) != 1) return '\x1b';
+
+        // convert arrow keys to be interpreted as hjkl
+        if (seq[0] == '[') 
+        {
+            switch (seq[1]) 
+            {
+            case 'A': 
+                return UP;
+            case 'B': 
+                return DOWN;
+            case 'C': 
+                return RIGHT;
+            case 'D': 
+                return LEFT;
+            }
+        }
+
+        return '\x1b';
+    }
 
     return c;
 }
