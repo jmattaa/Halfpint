@@ -7,8 +7,8 @@ exec = $(build)/halfpint
 source = $(shell find $(src) -name *.c)
 objects = $(patsubst $(src)/%.c, $(obj)/%.o, $(source))
 
-cflags =
-lflags = -g -fsanitize=address
+cflags = -g
+lflags = -g -ggdb -fsanitize=address
 
 $(exec): $(objects)
 	gcc $(lflags) -o $@ $^

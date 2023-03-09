@@ -6,10 +6,15 @@
 #include <errno.h>
 #include "include/Halfpint.h"
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
     Halfpint *editor = calloc(1, sizeof(Halfpint));
     Halfpint_Init(editor);
+
+    if (argc >= 2)
+        Halfpint_OpenEditor(editor, argv[1]);
+
+    Halfpint_SetStatusMessage(editor, "HELP: Ctrl-Q = quit");
 
     while (1)
     {
