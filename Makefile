@@ -8,7 +8,7 @@ source = $(shell find $(src) -name *.c)
 objects = $(patsubst $(src)/%.c, $(obj)/%.o, $(source))
 
 cflags = -g
-lflags = -g -ggdb -fsanitize=address
+lflags = -g -ggdb -fsanitize=address -lm 
 
 $(exec): $(objects)
 	gcc $(lflags) -o $@ $^

@@ -6,6 +6,17 @@
 
 #define CTRL_(k) ((k)&0x1f) // combine control with key
 
+#define UP 'k'
+#define DOWN 'j'
+#define LEFT 'h'
+#define RIGHT 'l'
+#define FIRST CTRL_('f')
+#define END CTRL_('e')
+
+#define escape_key 27
+
+#define HALFPINT_TABSTOP 8
+
 typedef enum 
 {
     mode_normal,
@@ -23,6 +34,7 @@ typedef struct halfpint
     struct dynbuf *buffer; // buffer which prints text to screen
 
     int rownum; // number of rows in exitor
+    int rownumdig; // the amount of digits in rownum
     struct dynbuf *erows; // editor rows
     int rowoffset, coloffset; // where the user is scrolled to in file
 
@@ -34,7 +46,7 @@ typedef struct halfpint
 } Halfpint;
 
 // gets the mode in a string
-char *Halfpint_Modename(Halfpint_Mode mode);
+char *Halfpint_Modename(Halfpint *halfpint);
 
 // initializes an editor
 void Halfpint_Init(Halfpint *halfpint);
