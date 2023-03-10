@@ -456,7 +456,7 @@ void Halfpint_DrawRows(Halfpint *halfpint)
             
             char linenum[128];
 
-            int numlen = snprintf(linenum, sizeof(linenum), "%*d  ", halfpint->rownumdig, currentrow); // make the string be the max amount of character width
+            int numlen = snprintf(linenum, sizeof(linenum), "%*d  ", halfpint->rownumdig, currentrow + 1); // make the string be the max amount of character width
 
             dynbuf_Append(halfpint->buffer, "\x1b[90m", 5);
             dynbuf_Append(halfpint->buffer, linenum, numlen); // line number
