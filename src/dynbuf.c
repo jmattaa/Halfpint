@@ -20,10 +20,13 @@ void dynbuf_Append(struct dynbuf *buffer, const char *s, int len)
 
 void dynbuf_Free(struct dynbuf *buffer)
 {
-    if (buffer->b != NULL)
+    if (buffer->b != NULL && buffer->render != NULL)
     {
         free(buffer->b);
+        free(buffer->render);
         buffer->b = NULL;
+        buffer->render = NULL;
         buffer->len = 0;
+        buffer->rlen = 0;
     }
 }

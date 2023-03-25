@@ -14,6 +14,7 @@
 #include <sys/ioctl.h>
 #include <string.h>
 #include <math.h>
+#include <fcntl.h>
 
 char *Halfpint_Modename(Halfpint *halfpint)
 {
@@ -30,8 +31,10 @@ char *Halfpint_Modename(Halfpint *halfpint)
     return NULL;
 }
 
-void Halfpint_Init(Halfpint *halfpint)
+Halfpint *Halfpint_Init()
 {
+    Halfpint *halfpint = calloc(1, sizeof(struct halfpint));
+
     // init cursor position to top left
     halfpint->cursorX = 0;
     halfpint->cursorY = 0;
@@ -58,9 +61,13 @@ void Halfpint_Init(Halfpint *halfpint)
 
     halfpint->statusmsg[0] = '\0';
     halfpint->statusmsg_time = 0;
+
+    halfpint->saved = 1;
+
+    return halfpint;
 }
 
-// helper function to appendRow
+// put render chars in render 
 void updateRow(Halfpint *halfpint, struct dynbuf *row)
 {
     int tabs = 0;
@@ -87,27 +94,161 @@ void updateRow(Halfpint *halfpint, struct dynbuf *row)
     row->rlen = i;
 }
 
-// helper function to openeditor
-void appendRow(Halfpint *halfpint, char *s, size_t len)
+void insertRow(Halfpint *halfpint, int at, char *s, size_t len)
 {
+    if (at < 0 || at > halfpint->rownum) return;
+
     halfpint->erows = realloc(halfpint->erows, sizeof(struct dynbuf) * (halfpint->rownum + 1));
+    memmove(&halfpint->erows[at + 1], &halfpint->erows[at], sizeof(struct dynbuf) * (halfpint->rownum - at));
 
-    int rownum = halfpint->rownum;
-    halfpint->erows[rownum].len = len;
-    halfpint->erows[rownum].b = malloc(len + 1);
+    halfpint->erows[at].len = len;
+    halfpint->erows[at].b = malloc(len + 1);
     
-    memcpy(halfpint->erows[rownum].b, s, len);
-    halfpint->erows[rownum].b[len] = '\0'; 
+    memcpy(halfpint->erows[at].b, s, len);
+    halfpint->erows[at].b[len] = '\0'; 
 
-    halfpint->erows[rownum].rlen = 0;
-    halfpint->erows[rownum].render = NULL;
+    halfpint->erows[at].rlen = 0;
+    halfpint->erows[at].render = NULL;
     
-    updateRow(halfpint, &halfpint->erows[rownum]);
+    updateRow(halfpint, &halfpint->erows[at]);
 
     halfpint->rownum++; 
 
-    // + 1 will give the amount digits in the number
-    halfpint->rownumdig = log10(rownum) + 1;
+    // + 1 will give the amount digits in the number + 1 again to add padding 
+    halfpint->rownumdig = log10(halfpint->rownum + 1) + 1;
+
+    halfpint->saved = 0;
+}
+
+void rowInsertChar(Halfpint *halfpint, struct dynbuf *row, int at, char c)
+{
+    if (at < 0 || at > row->len) at = row->len;
+
+    row->b = realloc(row->b, row->len + 2); // make room for '\0' and c 
+    memmove(&row->b[at + 1], &row->b[at], row->len - at + 1);
+
+    row->len++;
+    row->b[at] = c; // insert char
+
+    updateRow(halfpint, row);
+
+    halfpint->saved = 0;
+}
+
+void insertNewline(Halfpint *halfpint)
+{
+    if (halfpint->cursorX == 0)
+    {
+        insertRow(halfpint, halfpint->cursorY, "", 0);
+
+        halfpint->cursorY++;
+        halfpint->cursorX = 0;
+
+        return;
+    }
+
+    // split line into to lines
+    struct dynbuf *row = &halfpint->erows[halfpint->cursorY];
+    insertRow(halfpint, halfpint->cursorY + 1, &row->b[halfpint->cursorX], row->len - halfpint->cursorX);
+    row = &halfpint->erows[halfpint->cursorY];
+    row->len = halfpint->cursorX;
+    row->b[row->len] = '\0';
+    updateRow(halfpint, row);
+
+    halfpint->cursorY++;
+    halfpint->cursorX = 0;
+}
+
+void insertChar(Halfpint *halfpint, char c)
+{
+    if (halfpint->cursorY == halfpint->rownum) // insert a newline after file
+        insertRow(halfpint, halfpint->rownum, "", 0);
+
+    rowInsertChar(halfpint, &halfpint->erows[halfpint->cursorY], halfpint->cursorX, c);
+    halfpint->cursorX++;
+}
+
+char *rowsToString(Halfpint *halfpint, int *buflen)
+{
+    int totlen = 0;
+    int j;
+    
+    for (j = 0; j < halfpint->rownum; j++)
+        totlen += halfpint->erows[j].len + 1;
+    
+    *buflen = totlen;
+    char *buf = malloc(totlen);
+    char *p = buf;
+
+    for (j = 0; j < halfpint->rownum; j++) 
+    {
+        memcpy(p, halfpint->erows[j].b, halfpint->erows[j].len);
+        p += halfpint->erows[j].len;
+        *p = '\n';
+        p++;
+    }
+
+    return buf;
+}
+
+void rowAppendString(Halfpint* halfpint, struct dynbuf *row, char *s, int len)
+{
+    row->b = realloc(row->b, row->len + len + 1);
+    memcpy(&row->b[row->len], s, len);
+
+    row->len += len;
+    row->b[row->len] = '\0';
+    
+    updateRow(halfpint, row);
+
+    halfpint->saved = 0;
+}
+
+void rowDelChar(Halfpint *halfpint, struct dynbuf *row, int at)
+{
+    if (at < 0 || at >= row->len) return; // Invalid at
+
+    memmove(&row->b[at], &row->b[at + 1], row->len - at);
+
+    row->len--;
+    updateRow(halfpint, row);
+
+    halfpint->saved = 0;
+}
+
+void delRow(Halfpint* halfpint, int at)
+{
+    if (at < 0 || at >= halfpint->rownum) return; // Invalid at
+    
+    dynbuf_Free(&halfpint->erows[at]);
+    memmove(&halfpint->erows[at], &halfpint->erows[at + 1], sizeof(struct dynbuf) * (halfpint->rownum - at - 1));
+
+    halfpint->rownum--;
+
+    halfpint->saved = 0;
+}
+
+
+void delChar(Halfpint *halfpint)
+{
+    if (halfpint->cursorY == halfpint->rownum) return;
+    if (halfpint->cursorY == 0 && halfpint->cursorX == 0) return;
+
+    struct dynbuf *row = &halfpint->erows[halfpint->cursorY];
+    
+    if (halfpint->cursorX <= 0) // delete row
+    {
+        halfpint->cursorX = halfpint->erows[halfpint->cursorY - 1].len;
+        rowAppendString(halfpint, &halfpint->erows[halfpint->cursorY - 1], row->b, row->len);
+
+        delRow(halfpint, halfpint->cursorY);
+        halfpint->cursorY--;
+
+        return;
+    }
+
+    rowDelChar(halfpint, row, halfpint->cursorX - 1);
+    halfpint->cursorX--;
 }
 
 void Halfpint_OpenEditor(Halfpint *halfpint, char *filename)
@@ -127,11 +268,46 @@ void Halfpint_OpenEditor(Halfpint *halfpint, char *filename)
         while (linelen > 0 && (line[linelen - 1] == '\n' ||
                                line[linelen - 1] == '\r'))
             linelen--;
-        appendRow(halfpint, line, linelen);
+        insertRow(halfpint, halfpint->rownum, line, linelen);
     }
 
     free(line);
     fclose(fp);
+
+    halfpint->saved = 1;
+}
+
+void Halfpint_Save(Halfpint *halfpint)
+{
+    if (halfpint->filename == NULL)
+        // TODO let create file
+        return;
+
+    int len;
+    char *buffer = rowsToString(halfpint, &len);
+
+    int fd = open(halfpint->filename, O_RDWR | O_CREAT, 0644); // 0644 - owner can read and write and others can only read 
+
+    if (fd != -1)
+    {
+        if (ftruncate(fd, len) != -1)
+        {
+            if (write(fd, buffer, len) == len)
+            {
+                close(fd);
+                free(buffer);
+                Halfpint_SetStatusMessage(halfpint, "%dB written to '%s'", len, halfpint->filename);
+
+                halfpint->saved = 1;
+
+                return;
+            }
+        }
+        close(fd);
+    }
+    
+    free(buffer);
+    Halfpint_SetStatusMessage(halfpint, "Couldn't save ERR: %s", strerror(errno));
 }
 
 // helper function to Halfpint_ScrollEditor
@@ -221,12 +397,14 @@ void Halfpint_MoveCursor(Halfpint *halfpint, char key)
         case LEFT: 
             if (halfpint->cursorX != 0)
                 halfpint->cursorX--;
-            else if (halfpint->cursorY > 0) // we're not at last line
-            {
-                // go to end of last line
-                halfpint->cursorY--;
-                halfpint->cursorX = halfpint->erows[halfpint->cursorY].len;
-            }
+
+            // Uncomment to move line when we press right
+            //else if (halfpint->cursorY > 0) // we're not at last line
+            //{
+            //   // go to end of last line
+            //    halfpint->cursorY--;
+            //    halfpint->cursorX = halfpint->erows[halfpint->cursorY].len;
+            //}
             break;
         case DOWN: 
             if (halfpint->cursorY < halfpint->rownum) // so we can scroll until end of file 
@@ -239,12 +417,14 @@ void Halfpint_MoveCursor(Halfpint *halfpint, char key)
         case RIGHT: 
             if (currentrow && halfpint->cursorX < currentrow->len) // so we dont move past than line length
                 halfpint->cursorX++; 
-            else if (currentrow && halfpint->cursorX == currentrow->len) // we're at the end of the line
-            {
-                // go to begining of next line
-                halfpint->cursorY++;
-                halfpint->cursorX = 0;
-            }
+
+            // Uncomment to move line when we press right
+            //else if (currentrow && halfpint->cursorX == currentrow->len) // we're at the end of the line
+            //
+            //    // go to begining of next line
+            //    halfpint->cursorY++;
+            //    halfpint->cursorX = 0;
+            //}
             break;
         case FIRST:
             // place the cursor at the begining of file
@@ -265,7 +445,7 @@ void Halfpint_MoveCursor(Halfpint *halfpint, char key)
         halfpint->cursorX = rowlen;
 }
 
-char Halfpint_ReadKey(Halfpint *g_halfpint)
+int Halfpint_ReadKey(Halfpint *g_halfpint)
 {
     int nread;
     char c;
@@ -286,13 +466,13 @@ char Halfpint_ReadKey(Halfpint *g_halfpint)
             switch (seq[1]) 
             {
             case 'A': 
-                return UP;
+                return UP_ARR;
             case 'B': 
-                return DOWN;
+                return DOWN_ARR;
             case 'C': 
-                return RIGHT;
+                return RIGHT_ARR;
             case 'D': 
-                return LEFT;
+                return LEFT_ARR;
             }
         }
 
@@ -304,36 +484,95 @@ char Halfpint_ReadKey(Halfpint *g_halfpint)
 
 void Halfpint_ProcessKeypress(Halfpint *halfpint)
 {
-    char c = Halfpint_ReadKey(halfpint);
+    static int quit_times = 2;
+
+    int c = Halfpint_ReadKey(halfpint);
 
     switch (c) 
     {
+    case '\r': // enter
+        insertNewline(halfpint);
+        break;
+
     case CTRL_('q'):
+        if (!halfpint->saved && quit_times > 0) 
+        {
+            Halfpint_SetStatusMessage(halfpint, "WARNING: File has unsaved changes. Press Ctrl-Q %d more times to quit.", quit_times);
+            quit_times--;
+            break;
+        }
+
         write(STDOUT_FILENO, "\x1b[2J", 4); // clear screen
         write(STDOUT_FILENO, "\x1b[H", 3); // position the cursor to top left
     
         exit(0);
         break;
-    case 'i':
-        // go to insert mode if the mode is normal
-        if (halfpint->mode == mode_normal)
-            halfpint->mode = mode_insert;
-        break;
-    case escape_key:
-        // go to normal mode if mode is insert
-        if (halfpint->mode == mode_insert)
-            halfpint->mode = mode_normal;
-        break;
-    case UP:
-    case DOWN:
-    case LEFT:
-    case RIGHT:
+
+    case CTRL_('s'):
+        Halfpint_Save(halfpint);
+
     case FIRST:
     case END:
         Halfpint_MoveCursor(halfpint, c);
         break;
 
-    default: break;
+    case backspace_key:
+        // delete character if in insert mode
+        if (halfpint->mode == mode_insert)
+            delChar(halfpint);
+        else if (halfpint->mode == mode_normal) // move cursor if normal mode 
+            Halfpint_MoveCursor(halfpint, LEFT);
+        break;
+
+    case UP_ARR:
+        Halfpint_MoveCursor(halfpint, UP);
+        break;
+    case DOWN_ARR:
+        Halfpint_MoveCursor(halfpint, DOWN);
+        break;
+    case LEFT_ARR:
+        Halfpint_MoveCursor(halfpint, LEFT);
+        break;
+    case RIGHT_ARR: 
+        Halfpint_MoveCursor(halfpint, RIGHT);
+        break;
+
+    case escape_key:
+        // go to normal mode if mode is insert
+        if (halfpint->mode == mode_insert)
+            halfpint->mode = mode_normal;
+        break;
+
+    // refresh screen
+    // NOTE: screen refreshs after keypress
+    case CTRL_('l'):
+        break;
+
+    //!! this needs to be last
+    // because we want to write the letters 
+    // hjkl and i if we're in insert mode
+    case UP:
+    case DOWN:
+    case LEFT:
+    case RIGHT:
+        if (halfpint->mode == mode_normal)
+        {
+            Halfpint_MoveCursor(halfpint, c);
+            break;
+        } 
+    // write i 
+    case 'i':
+        // go to insert mode if the mode is normal
+        if (halfpint->mode == mode_normal)
+        {
+            halfpint->mode = mode_insert;
+            break;
+        }
+
+    default: 
+        if (halfpint->mode == mode_insert)
+            insertChar(halfpint, c);
+        break;
     }
 }
 
@@ -345,9 +584,10 @@ void drawStatusbar(Halfpint *halfpint)
     int len = snprintf(
             status, 
             sizeof(status), 
-            "%.20s -- %s --", // %.20s max 20 cols
+            "%.20s -- %s --  %s", // %.20s max 20 cols
             halfpint->filename ? halfpint->filename : "[No Name]", // if the filename is NULL display no name
-            Halfpint_Modename(halfpint));
+            Halfpint_Modename(halfpint),
+            halfpint->saved? "" : "[+]");
 
 
     int fprecent = ((float)(halfpint->cursorY + 1) / (float)halfpint->rownum) * 100.0f; // get precentage of file
@@ -408,14 +648,27 @@ void Halfpint_RefreshScreen(Halfpint *halfpint)
 
     // translate file position to screen position and start from after the line number on x axis
     int curypos = ((halfpint->cursorY - halfpint->rowoffset) + 1);
-    // +2 because we have 2 spaces after line number
-    int curxpos = ((halfpint->renderX - halfpint->coloffset) + 1) + halfpint->rownumdig + 2;
+    // +1 because we have 1 spaces after line number
+    int curxpos = ((halfpint->renderX - halfpint->coloffset) + 1) + halfpint->rownumdig + 1;
 
     // top left starts at 1, 1
     snprintf(buf, sizeof(buf),"\x1b[%d;%dH", curypos, curxpos); 
     dynbuf_Append(halfpint->buffer, buf, strlen(buf));
 
     dynbuf_Append(halfpint->buffer, "\x1b[?25h", 6); // show the cursor 
+
+    // set cursor shape
+    switch (halfpint->mode)
+    {
+    case mode_normal:
+        // blinking block
+        dynbuf_Append(halfpint->buffer, "\x1b[\x30 q", 5);
+        break;
+    case mode_insert:
+        // blinking bar
+        dynbuf_Append(halfpint->buffer, "\x1b[\x35 q", 5);
+        break;
+    }
     
     write(STDOUT_FILENO, halfpint->buffer->b, halfpint->buffer->len);
     dynbuf_Free(halfpint->buffer);
@@ -456,7 +709,7 @@ void Halfpint_DrawRows(Halfpint *halfpint)
             
             char linenum[128];
 
-            int numlen = snprintf(linenum, sizeof(linenum), "%*d  ", halfpint->rownumdig, currentrow + 1); // make the string be the max amount of character width
+            int numlen = snprintf(linenum, sizeof(linenum), "%*d ", halfpint->rownumdig, currentrow + 1); // make the string be the max amount of character width
 
             dynbuf_Append(halfpint->buffer, "\x1b[90m", 5);
             dynbuf_Append(halfpint->buffer, linenum, numlen); // line number

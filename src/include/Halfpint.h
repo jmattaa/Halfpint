@@ -10,10 +10,17 @@
 #define DOWN 'j'
 #define LEFT 'h'
 #define RIGHT 'l'
+
 #define FIRST CTRL_('f')
 #define END CTRL_('e')
 
-#define escape_key 27
+#define UP_ARR 1000
+#define DOWN_ARR 1100
+#define LEFT_ARR 1200
+#define RIGHT_ARR 1300
+
+#define escape_key 0x1b
+#define backspace_key 0x7f
 
 #define HALFPINT_TABSTOP 8
 
@@ -43,16 +50,21 @@ typedef struct halfpint
     
     char statusmsg[64]; // text underneeth the statusbar dissapiears
     time_t statusmsg_time; // time of statusmsg 
+    
+    unsigned saved:1; // flag which keeps track wether file is saved or not
 } Halfpint;
 
 // gets the mode in a string
 char *Halfpint_Modename(Halfpint *halfpint);
 
 // initializes an editor
-void Halfpint_Init(Halfpint *halfpint);
+Halfpint *Halfpint_Init();
 
 // opens a file in the editor
 void Halfpint_OpenEditor(Halfpint *halfpint, char *filename);
+
+// saves the file to disk
+void Halfpint_Save(Halfpint *halfpint);
 
 // scrolls the editor when file is bigger than screen
 void Halfpint_ScrollEditor(Halfpint *halfpint);
@@ -70,7 +82,7 @@ void Halfpint_EnableRawMode(Halfpint *g_halfpint);
 void Halfpint_MoveCursor(Halfpint *halfpint, char key);
 
 // reads keys pressed of user
-char Halfpint_ReadKey(Halfpint *g_halfpint);
+int Halfpint_ReadKey(Halfpint *g_halfpint);
 
 // process the key presses
 void Halfpint_ProcessKeypress(Halfpint *halfpint);

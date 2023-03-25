@@ -1,24 +1,8 @@
-Hello from test.txt!!
-
-This is line 3
+I removed all the lines!!
 
 
-
-and this is line 7
-
+now we add lines
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-hello line 24
+this line is split in two by 
+pressing enter in the middle of it

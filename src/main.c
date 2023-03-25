@@ -8,8 +8,7 @@
 
 int main(int argc, char *argv[])
 {
-    Halfpint *editor = calloc(1, sizeof(Halfpint));
-    Halfpint_Init(editor);
+    Halfpint *editor = Halfpint_Init();
 
     if (argc >= 2)
         Halfpint_OpenEditor(editor, argv[1]);
