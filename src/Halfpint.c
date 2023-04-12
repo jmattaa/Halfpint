@@ -704,17 +704,19 @@ void Halfpint_DrawRows(Halfpint *halfpint)
         }
         else 
         {
-            int len = halfpint->erows[currentrow].rlen - halfpint->coloffset;
-            if (len > halfpint->cols) len = halfpint->cols;
-            
             char linenum[128];
-
             int numlen = snprintf(linenum, sizeof(linenum), "%*d ", halfpint->rownumdig, currentrow + 1); // make the string be the max amount of character width
+
+            Halfpint_SetStatusMessage(halfpint, "'%s'", linenum); 
 
             dynbuf_Append(halfpint->buffer, "\x1b[90m", 5);
             dynbuf_Append(halfpint->buffer, linenum, numlen); // line number
             dynbuf_Append(halfpint->buffer, "\x1b[0m", 4);
 
+            int len = halfpint->erows[currentrow].rlen - halfpint->coloffset;
+            if (len < 0) len = 0;
+            if (len > halfpint->cols - numlen) len = halfpint->cols - numlen; // this numlen is to keep line rendering corectly
+            
             dynbuf_Append(halfpint->buffer, &halfpint->erows[currentrow].render[halfpint->coloffset], len);
         }
 
