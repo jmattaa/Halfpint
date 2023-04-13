@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
 
     while (1)
     {
-        Halfpint_RefreshScreen(editor);
+        Halfpint_RenderScreen(editor);
         Halfpint_ProcessKeypress(editor);
     }
 

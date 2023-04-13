@@ -3,6 +3,20 @@
 #include "dynbuf.h"
 #include <termios.h>
 #include <time.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <termios.h>
+#include <time.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/ioctl.h>
+#include <string.h>
+#include <math.h>
+#include <fcntl.h>
 
 #define CTRL_(k) ((k)&0x1f) // combine control with key
 
@@ -87,8 +101,8 @@ int Halfpint_ReadKey(Halfpint *g_halfpint);
 // process the key presses
 void Halfpint_ProcessKeypress(Halfpint *halfpint);
 
-// refresh screen by clearing and printing file
-void Halfpint_RefreshScreen(Halfpint *halfpint);
+// render screen by clearing and printing file
+void Halfpint_RenderScreen(Halfpint *halfpint);
 
 // print the file and draw all rows
 void Halfpint_DrawRows(Halfpint *halfpint);
