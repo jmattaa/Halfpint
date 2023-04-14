@@ -1,4 +1,5 @@
 #include "include/Halfpint.h"
+#include <string.h>
 
 int Halfpint_ReadKey()
 {
@@ -42,8 +43,6 @@ int Halfpint_ReadKey()
 
 void Halfpint_ProcessKeypress()
 {
-    static int quit_times = 2;
-
     int c = Halfpint_ReadKey();
 
     switch (c)
@@ -53,10 +52,13 @@ void Halfpint_ProcessKeypress()
         break;
 
     case CTRL_('q'):
-        if (!editor.saved && quit_times > 0)
+        if (!editor.saved)
         {
-            Halfpint_SetStatusMessage("WARNING: File has unsaved changes. Press Ctrl-Q %d more times to quit.", quit_times);
-            quit_times--;
+            char *ans = Halfpint_Prompt("Unsaved file. Quit without saving (y/n)? %s");
+
+            if (strcmp(ans, "y") == 0)
+                die("Quited");
+
             break;
         }
 
