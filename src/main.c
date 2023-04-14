@@ -13,8 +13,6 @@ int main(int argc, char *argv[])
     if (argc >= 2)
         Halfpint_OpenEditor(argv[1]);
 
-    Halfpint_SetStatusMessage("HELP: Ctrl-Q = quit");
-
     while (1)
     {
         Halfpint_RenderScreen();

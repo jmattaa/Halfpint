@@ -1,5 +1,6 @@
 #include "include/Halfpint.h"
 #include "include/dynbuf.h"
+#include <string.h>
 
 Halfpint editor = {.buffer = NULL};
 
@@ -120,15 +121,31 @@ void Halfpint_Save()
 int rowCxToRx(struct dynbuf *row, int cx)
 {
     int rx = 0;
-    int j;
 
-    for (j = 0; j < cx; j++)
+    for (int j = 0; j < cx; j++)
     {
         if (row->b[j] == '\t')
             rx += (HALFPINT_TABSTOP - 1) - (rx % HALFPINT_TABSTOP);
         rx++;
     }
+
     return rx;
+}
+
+// opposite of rowCxToRx
+int rowRxToCx(struct dynbuf *row, int rx)
+{
+    int cursor_rx = 0;
+    int cx;
+    for (cx = 0; cx < row->len; cx++)
+    {
+        if (row->b[cx] == '\t')
+            cursor_rx += (HALFPINT_TABSTOP - 1) - (cursor_rx % HALFPINT_TABSTOP);
+        cursor_rx++;
+        if (cursor_rx > rx) return cx;
+    }
+
+    return cx;
 }
 
 void Halfpint_ScrollEditor()
@@ -265,3 +282,35 @@ int Halfpint_GetWindowSize()
         return 0;
     }
 }
+
+void Halfpint_Find()
+{
+    char *query = Halfpint_Prompt("/%s");
+
+    if (query == NULL)
+        return;
+
+    for (int i = 0; i < editor.rownum; i++)
+    {
+        struct dynbuf *row = &editor.erows[i];
+        char *match = strstr(row->render, query);
+    
+        if (match) // found match
+        {
+            // place cursor at the match
+            editor.cursorY = i;
+            editor.cursorX = rowRxToCx(row, match - row->render);
+
+            // this will scroll to the bottom
+            // so when we call Halfpint_ScrollEditor we get our 
+            // line in the top of the screen
+            editor.rowoffset = editor.rownum;
+            
+            break;
+        }
+    }
+
+    free(query);
+}
+
+

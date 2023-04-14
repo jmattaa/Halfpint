@@ -54,7 +54,7 @@ typedef struct halfpint
     struct termios g_termios;
     struct dynbuf *buffer; // buffer which prints text to screen
 
-    int rownum;               // number of rows in exitor
+    int rownum;               // number of rows in file 
     int rownumdig;            // the amount of digits in rownum
     struct dynbuf *erows;     // editor rows
     int rowoffset, coloffset; // where the user is scrolled to in file
@@ -109,6 +109,9 @@ void Halfpint_DrawRows();
 
 // gets the window size into the `editor rows and cols`
 int Halfpint_GetWindowSize();
+
+// prompts the user for a query to find in the text
+void Halfpint_Find();
 
 // prints a message to the statusmsg bar
 void Halfpint_SetStatusMessage(const char *s, ...);
