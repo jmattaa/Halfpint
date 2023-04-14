@@ -151,13 +151,3 @@ void Halfpint_DrawRows()
     }
 }
 
-void Halfpint_SetStatusMessage(const char *s, ...)
-{
-    va_list argp;
-
-    va_start(argp, s);
-    vsnprintf(editor.statusmsg, sizeof(editor.statusmsg), s, argp);
-    va_end(argp);
-
-    editor.statusmsg_time = time(NULL);
-}

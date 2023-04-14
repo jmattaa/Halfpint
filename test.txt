@@ -1,8 +1,3 @@
-I removed all the lines!!
+This will override test.txt
 
-
-now we add lines
-
-
-this line is split in two by 
-pressing enter in the middle of it
+this was an empty file created by halfpint yay :)

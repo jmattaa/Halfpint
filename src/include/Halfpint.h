@@ -113,6 +113,33 @@ int Halfpint_GetWindowSize();
 // prints a message to the statusmsg bar
 void Halfpint_SetStatusMessage(const char *s, ...);
 
+// propmts the user from the statusmsg bar and returns the user input
+char *Halfpint_Prompt(char *prompt); 
+
+
+// row functions
+
+// put render chars in render
+void updateRow(struct dynbuf *row);
+
+void insertRow(int at, char *s, size_t len);
+
+void rowInsertChar(struct dynbuf *row, int at, char c);
+
+void insertNewline();
+
+void insertChar(char c);
+
+char *rowsToString(int *buflen);
+
+void rowAppendString(struct dynbuf *row, char *s, int len);
+
+void rowDelChar(struct dynbuf *row, int at);
+
+void delRow(int at);
+
+void delChar();
+
 extern Halfpint editor;
 
 #define HALFPINT_VERSION "0.0.1"
