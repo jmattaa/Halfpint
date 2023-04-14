@@ -8,20 +8,20 @@
 
 int main(int argc, char *argv[])
 {
-    Halfpint *editor = Halfpint_Init();
+    Halfpint_Init();
 
     if (argc >= 2)
-        Halfpint_OpenEditor(editor, argv[1]);
+        Halfpint_OpenEditor(argv[1]);
 
-    Halfpint_SetStatusMessage(editor, "HELP: Ctrl-Q = quit");
+    Halfpint_SetStatusMessage("HELP: Ctrl-Q = quit");
 
     while (1)
     {
-        Halfpint_RenderScreen(editor);
-        Halfpint_ProcessKeypress(editor);
+        Halfpint_RenderScreen();
+        Halfpint_ProcessKeypress();
     }
 
-    Halfpint_DisableRawMode(editor);
+    Halfpint_DisableRawMode();
 
     return 0;
 }

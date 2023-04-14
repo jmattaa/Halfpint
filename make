@@ -1,5 +1,10 @@
 [
     {
+        "command": "gcc -c -g -o bin/obj/Rendering.o src/Rendering.c",
+        "directory": "/home/jonathan/Dev/HalfPint",
+        "file": "/home/jonathan/Dev/HalfPint/src/Rendering.c"
+    },
+    {
         "command": "gcc -c -g -o bin/obj/Halfpint.o src/Halfpint.c",
         "directory": "/home/jonathan/Dev/HalfPint",
         "file": "/home/jonathan/Dev/HalfPint/src/Halfpint.c"

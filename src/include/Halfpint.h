@@ -38,7 +38,7 @@
 
 #define HALFPINT_TABSTOP 8
 
-typedef enum 
+typedef enum
 {
     mode_normal,
     mode_insert
@@ -47,70 +47,72 @@ typedef enum
 // struct that contains all information for the editor
 typedef struct halfpint
 {
-    int cols, rows; // screen resolution
+    int cols, rows;       // screen resolution
     int cursorX, cursorY; // cursor position
-    int renderX; // cursor position in render chars
+    int renderX;          // cursor position in render chars
 
     struct termios g_termios;
     struct dynbuf *buffer; // buffer which prints text to screen
 
-    int rownum; // number of rows in exitor
-    int rownumdig; // the amount of digits in rownum
-    struct dynbuf *erows; // editor rows
+    int rownum;               // number of rows in exitor
+    int rownumdig;            // the amount of digits in rownum
+    struct dynbuf *erows;     // editor rows
     int rowoffset, coloffset; // where the user is scrolled to in file
 
-    char *filename; // the open file's name
-    Halfpint_Mode mode; // the mode we're in (normal/insert) 
-    
-    char statusmsg[64]; // text underneeth the statusbar dissapiears
-    time_t statusmsg_time; // time of statusmsg 
-    
-    unsigned saved:1; // flag which keeps track wether file is saved or not
+    char *filename;     // the open file's name
+    Halfpint_Mode mode; // the mode we're in (normal/insert)
+
+    char statusmsg[64];    // text underneeth the statusbar dissapiears
+    time_t statusmsg_time; // time of statusmsg
+
+    unsigned saved : 1; // flag which keeps track wether file is saved or not
 } Halfpint;
 
 // gets the mode in a string
-char *Halfpint_Modename(Halfpint *halfpint);
+char *Halfpint_Modename();
 
 // initializes an editor
-Halfpint *Halfpint_Init();
+void Halfpint_Init();
 
 // opens a file in the editor
-void Halfpint_OpenEditor(Halfpint *halfpint, char *filename);
+void Halfpint_OpenEditor(char *filename);
 
 // saves the file to disk
-void Halfpint_Save(Halfpint *halfpint);
+void Halfpint_Save();
 
 // scrolls the editor when file is bigger than screen
-void Halfpint_ScrollEditor(Halfpint *halfpint);
+void Halfpint_ScrollEditor();
 
 // kills program and prints state of last function
 void die(const char *s);
 
 // dissables rawmode *use after closing program*
-void Halfpint_DisableRawMode(Halfpint *g_halfpint);
+void Halfpint_DisableRawMode();
 
 // enables raw mode so we have control of terminal
-void Halfpint_EnableRawMode(Halfpint *g_halfpint);
+void Halfpint_EnableRawMode();
 
 // moves the cursor on the screen
-void Halfpint_MoveCursor(Halfpint *halfpint, char key);
+void Halfpint_MoveCursor(char key);
 
 // reads keys pressed of user
-int Halfpint_ReadKey(Halfpint *g_halfpint);
+int Halfpint_ReadKey();
 
 // process the key presses
-void Halfpint_ProcessKeypress(Halfpint *halfpint);
+void Halfpint_ProcessKeypress();
 
 // render screen by clearing and printing file
-void Halfpint_RenderScreen(Halfpint *halfpint);
+void Halfpint_RenderScreen();
 
 // print the file and draw all rows
-void Halfpint_DrawRows(Halfpint *halfpint);
+void Halfpint_DrawRows();
 
-// gets the window size into the `(struct halfpint *)->rows and cols` 
-int Halfpint_GetWindowSize(Halfpint *halfpint);
+// gets the window size into the `editor rows and cols`
+int Halfpint_GetWindowSize();
 
 // prints a message to the statusmsg bar
-void Halfpint_SetStatusMessage(Halfpint *halfpint, const char *s, ...);
+void Halfpint_SetStatusMessage(const char *s, ...);
+
+extern Halfpint editor;
 
 #define HALFPINT_VERSION "0.0.1"
