@@ -41,7 +41,8 @@
 typedef enum
 {
     mode_normal,
-    mode_insert
+    mode_insert,
+    mode_command
 } Halfpint_Mode;
 
 // struct that contains all information for the editor
@@ -101,7 +102,7 @@ int Halfpint_ReadKey();
 // process the key presses
 void Halfpint_ProcessKeypress();
 
-// render screen by clearing and printing file
+// render screen by printing file
 void Halfpint_RenderScreen();
 
 // print the file and draw all rows
@@ -113,12 +114,17 @@ int Halfpint_GetWindowSize();
 // prompts the user for a query to find in the text
 void Halfpint_Find();
 
+// prompts the user for a command
+void Halfpint_RunCmd();
+
 // prints a message to the statusmsg bar
 void Halfpint_SetStatusMessage(const char *s, ...);
 
 // propmts the user from the statusmsg bar and returns the user input
 char *Halfpint_Prompt(char *prompt); 
 
+// quits the app and asks to save if file not saved
+void Halfpint_Quit();
 
 // row functions
 

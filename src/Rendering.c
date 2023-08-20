@@ -75,6 +75,13 @@ void Halfpint_RenderScreen()
     // +1 because we have 1 spaces after line number
     int curxpos = ((editor.renderX - editor.coloffset) + 1) + editor.rownumdig + 1;
 
+    // place cursor on commad place if in command mode
+    if (editor.mode == mode_command)
+    {
+        curypos = editor.rows + 2;
+        curxpos = 0;
+    }
+
     // top left starts at 1, 1
     snprintf(buf, sizeof(buf), "\x1b[%d;%dH", curypos, curxpos);
     dynbuf_Append(editor.buffer, buf, strlen(buf));
@@ -84,13 +91,15 @@ void Halfpint_RenderScreen()
     // set cursor shape
     switch (editor.mode)
     {
-    case mode_normal:
-        // blinking block
-        dynbuf_Append(editor.buffer, "\x1b[\x30 q", 5);
-        break;
     case mode_insert:
         // blinking bar
         dynbuf_Append(editor.buffer, "\x1b[\x35 q", 5);
+        break;
+    // if not insert 
+    // we do blinking block
+    default:
+        // blinking block
+        dynbuf_Append(editor.buffer, "\x1b[\x30 q", 5);
         break;
     }
 

@@ -52,20 +52,7 @@ void Halfpint_ProcessKeypress()
         break;
 
     case CTRL_('q'):
-        if (!editor.saved)
-        {
-            char *ans = Halfpint_Prompt("Unsaved file. Quit without saving (y/n)? %s");
-
-            if (strcmp(ans, "y") == 0)
-                die("Quited");
-
-            break;
-        }
-
-        write(STDOUT_FILENO, "\x1b[2J", 4); // clear screen
-        write(STDOUT_FILENO, "\x1b[H", 3);  // position the cursor to top left
-
-        exit(0);
+        Halfpint_Quit();
         break;
 
     case CTRL_('s'):
@@ -98,8 +85,8 @@ void Halfpint_ProcessKeypress()
         break;
 
     case escape_key:
-        // go to normal mode if mode is insert
-        if (editor.mode == mode_insert)
+        // go to normal mode if mode is insert or command
+        if (editor.mode == mode_insert || editor.mode == mode_command)
             editor.mode = mode_normal;
         break;
 
@@ -134,6 +121,15 @@ void Halfpint_ProcessKeypress()
         if (editor.mode == mode_normal)
         {
             editor.mode = mode_insert;
+            break;
+        }
+    // enter commnd mode
+    case ':':
+        // command mode if its normal
+        if (editor.mode == mode_normal)
+        {
+            editor.mode = mode_command;
+            Halfpint_RunCmd();
             break;
         }
 

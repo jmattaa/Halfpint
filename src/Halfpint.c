@@ -14,6 +14,9 @@ char *Halfpint_Modename()
     case mode_insert:
         return "INSERT";
         break;
+    case mode_command:
+        return "COMMAND";
+        break;
     }
 
     return NULL;
@@ -283,6 +286,22 @@ int Halfpint_GetWindowSize()
     }
 }
 
+void Halfpint_Quit()
+{
+    if (!editor.saved)
+    {
+        char *ans = Halfpint_Prompt("Unsaved file. Quit without saving (y/n)? %s");
+
+        if (strcmp(ans, "y") == 0)
+            die("Quited");
+    }
+
+    write(STDOUT_FILENO, "\x1b[2J", 4); // clear screen
+    write(STDOUT_FILENO, "\x1b[H", 3);  // position the cursor to top left
+
+    exit(0);
+}
+
 void Halfpint_Find()
 {
     char *query = Halfpint_Prompt("/%s");
@@ -311,6 +330,23 @@ void Halfpint_Find()
     }
 
     free(query);
+}
+
+void Halfpint_RunCmd() 
+{
+    char* cmd = Halfpint_Prompt(":%s");
+    
+    if (strcmp(cmd, "q") == 0)
+    {
+        Halfpint_Quit();
+    }
+    else if (strcmp(cmd, "w") == 0)
+    {
+        Halfpint_Save();
+    }
+
+    // after we've got the command we leave command mode
+    editor.mode = mode_normal;
 }
 
 
