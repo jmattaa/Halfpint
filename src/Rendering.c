@@ -75,12 +75,6 @@ void Halfpint_RenderScreen()
     // +1 because we have 1 spaces after line number
     int curxpos = ((editor.renderX - editor.coloffset) + 1) + editor.rownumdig + 1;
 
-    // place cursor on commad place if in command mode
-    if (editor.mode == mode_command)
-    {
-        curypos = editor.rows + 2;
-        curxpos = 0;
-    }
 
     // top left starts at 1, 1
     snprintf(buf, sizeof(buf), "\x1b[%d;%dH", curypos, curxpos);

@@ -344,6 +344,10 @@ void Halfpint_RunCmd()
     {
         Halfpint_Save();
     }
+    else
+    {
+        Halfpint_SetStatusMessage("Command not found");
+    }
 
     // after we've got the command we leave command mode
     editor.mode = mode_normal;

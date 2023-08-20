@@ -1,7 +1,3 @@
-// TODO: fix flickering when typing
-// prolly from to much being rendered?
-// clearing screen may fix?
-
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>

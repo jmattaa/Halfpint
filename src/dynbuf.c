@@ -20,13 +20,20 @@ void dynbuf_Append(struct dynbuf *buffer, const char *s, int len)
 
 void dynbuf_Free(struct dynbuf *buffer)
 {
-    if (buffer->b != NULL && buffer->render != NULL)
+    // the whole problem was that i was freeing wrong
+    // ha dumbass
+    // now we gotta free the b separatly and the render separatly
+    // how was i thinking freing them together
+    if (buffer->b != NULL)
     {
         free(buffer->b);
-        free(buffer->render);
         buffer->b = NULL;
-        buffer->render = NULL;
         buffer->len = 0;
+    }
+    if (buffer->render != NULL)
+    {
+        free(buffer->render);
+        buffer->render = NULL;
         buffer->rlen = 0;
     }
 }
