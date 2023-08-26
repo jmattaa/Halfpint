@@ -105,11 +105,13 @@ void Halfpint_ProcessKeypress()
 
     //!! this needs to be last
     // because we want to write the letters
-    // hjkl and i if we're in insert mode
+    // hjkl and i if we're in insert mode and other moving chars
     case UP:
     case DOWN:
     case LEFT:
     case RIGHT:
+    case '$': // move to end of line
+    case '0': // move to begining of line
         if (editor.mode == mode_normal)
         {
             Halfpint_MoveCursor(c);
@@ -120,6 +122,23 @@ void Halfpint_ProcessKeypress()
         // go to insert mode if the mode is normal
         if (editor.mode == mode_normal)
         {
+            editor.mode = mode_insert;
+            break;
+        }
+    case 'a':
+        // go to insert mode on the right of cursor
+        if (editor.mode == mode_normal)
+        {
+            Halfpint_MoveCursor(RIGHT);
+            editor.mode = mode_insert;
+            break;
+        }
+    case 'o':
+        // make newline and enter insert mode
+        if (editor.mode == mode_normal)
+        {
+            Halfpint_MoveCursor('$');
+            insertNewline();
             editor.mode = mode_insert;
             break;
         }

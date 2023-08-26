@@ -183,7 +183,7 @@ void die(const char *s)
 void Halfpint_DisableRawMode()
 {
     int c = tcsetattr(STDIN_FILENO, TCSAFLUSH, &editor.g_termios);
-    if (c - 1)
+    if (c == - 1)
         die("tcsetattr");
 }
 
@@ -194,10 +194,11 @@ void Halfpint_EnableRawMode()
 
     struct termios raw = editor.g_termios;
 
+    atexit(Halfpint_DisableRawMode);
     // set some attributes
     // i ain't writing what everything does
     // do your research Jona!
-    // ICRNL - make carriage return ('\r') not be translated to newline ('\n')
+    // ICRNL - make carriage return ('\r') not be translated to newline ('\n') this means that enter is \r
     // IXON - dissable software flow control shortcuts
     raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
     // turn off:
@@ -236,7 +237,7 @@ void Halfpint_MoveCursor(char key)
         //}
         break;
     case DOWN:
-        if (editor.cursorY < editor.rownum) // so we can scroll until end of screen
+        if (editor.cursorY < editor.rownum - 1) // so we can scroll until end of screen
             editor.cursorY++;
         break;
     case UP:
@@ -255,6 +256,12 @@ void Halfpint_MoveCursor(char key)
         //    editor.cursorX = 0;
         //}
         break;
+    case '$': // move to end of line
+        editor.cursorX = currentrow->len;
+        break;
+    case '0': // move to beginig of line
+        editor.cursorX = 0;
+        break;
     case FIRST:
         // place the cursor at the begining of file
         editor.cursorY = 0;
@@ -262,7 +269,7 @@ void Halfpint_MoveCursor(char key)
         break;
     case END:
         // place the cursor at the last line
-        editor.cursorY = editor.rownum;
+        editor.cursorY = editor.rownum - 1;
         break;
     }
 
@@ -292,8 +299,8 @@ void Halfpint_Quit()
     {
         char *ans = Halfpint_Prompt("Unsaved file. Quit without saving (y/n)? %s");
 
-        if (strcmp(ans, "y") == 0)
-            die("Quited");
+        if (strcmp(ans, "y") != 0)
+            return;
     }
 
     write(STDOUT_FILENO, "\x1b[2J", 4); // clear screen

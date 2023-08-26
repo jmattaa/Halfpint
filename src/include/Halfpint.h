@@ -26,7 +26,7 @@
 #define RIGHT 'l'
 
 #define FIRST CTRL_('f')
-#define END CTRL_('e')
+#define END CTRL_('e') 
 
 #define UP_ARR 1000
 #define DOWN_ARR 1100
