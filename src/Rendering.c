@@ -146,7 +146,20 @@ void Halfpint_DrawRows()
             if (len > editor.cols - numlen)
                 len = editor.cols - numlen; // this numlen is to keep line rendering corectly
 
-            dynbuf_Append(editor.buffer, &editor.erows[currentrow].render[editor.coloffset], len);
+            char *c = &editor.erows[currentrow].render[editor.coloffset]; // get the character of the line 
+            for (int j = 0; j < len; j++)
+            {
+                if (isdigit(c[j])) // higlight digits red
+                {
+                    dynbuf_Append(editor.buffer, "\x1b[31m", 5);
+                    dynbuf_Append(editor.buffer, &c[j], 1);
+                    dynbuf_Append(editor.buffer, "\x1b[39m", 5);
+                } 
+                else // normally print the current character 
+                {
+                    dynbuf_Append(editor.buffer, &c[j], 1);
+                }
+            }
         }
 
         dynbuf_Append(editor.buffer, "\x1b[K", 3); // clear line
