@@ -342,6 +342,12 @@ void Halfpint_Find()
 void Halfpint_RunCmd() 
 {
     char* cmd = Halfpint_Prompt(":%s");
+
+    if(!cmd) // cancel if we dont give some command
+    {
+        editor.mode = mode_normal;
+        return;
+    }
     
     if (strcmp(cmd, "q") == 0)
     {
