@@ -36,4 +36,8 @@ void dynbuf_Free(struct dynbuf *buffer)
         buffer->render = NULL;
         buffer->rlen = 0;
     }
+    if (buffer->hl != NULL)
+    {
+        free(buffer->hl);
+    }
 }

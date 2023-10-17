@@ -146,24 +146,68 @@ void Halfpint_DrawRows()
             if (len > editor.cols - numlen)
                 len = editor.cols - numlen; // this numlen is to keep line rendering corectly
 
-            char *c = &editor.erows[currentrow].render[editor.coloffset]; // get the character of the line 
+            char *c = &editor.erows[currentrow].render[editor.coloffset]; // get the line in a string 
+            unsigned char *hl = &editor.erows[currentrow].hl[editor.coloffset]; // get how the line is highlighted
+            int currentcolor = -1;
             for (int j = 0; j < len; j++)
             {
-                if (isdigit(c[j])) // higlight digits red
+                if (hl[j] == hl_normal)
                 {
-                    dynbuf_Append(editor.buffer, "\x1b[31m", 5);
+                    if (currentcolor != -1)
+                    {
+                        dynbuf_Append(editor.buffer, "\x1b[39m", 5);
+                        currentcolor = -1;
+                    }
+
                     dynbuf_Append(editor.buffer, &c[j], 1);
-                    dynbuf_Append(editor.buffer, "\x1b[39m", 5);
-                } 
-                else // normally print the current character 
+                }
+                else 
                 {
+                    // get the syntax as a color
+                    int color = Halfpint_SyntaxToColors(hl[j]);
+                    
+                    if (color != currentcolor)
+                    {
+                        currentcolor = color;
+                        char buf[16];
+                        // color the character 
+                        int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
+                        dynbuf_Append(editor.buffer, buf, clen);
+                    }
                     dynbuf_Append(editor.buffer, &c[j], 1);
                 }
             }
+            dynbuf_Append(editor.buffer, "\x1b[39m", 5); // reset the hl
         }
 
         dynbuf_Append(editor.buffer, "\x1b[K", 3); // clear line
         dynbuf_Append(editor.buffer, "\r\n", 2);
     }
 }
+
+void Halfpint_UpdateSyntax(struct dynbuf *row)
+{
+    row->hl = realloc(row->hl, row->rlen);
+    memset(row->hl, hl_normal, row->rlen);
+
+    for (int i = 0; i < row->rlen; i++) 
+    {
+        if (isdigit(row->render[i])) 
+        {
+            row->hl[i] = hl_number;
+        }
+    }
+}
+
+int Halfpint_SyntaxToColors(int hl)
+{
+    switch (hl) 
+    {
+        case hl_number:
+            return 31; // fg number red
+        default:
+            return 37; // fg default white 
+    }
+}
+
 

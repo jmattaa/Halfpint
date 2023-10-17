@@ -27,6 +27,8 @@ void updateRow(struct dynbuf *row)
 
     row->render[i] = '\0';
     row->rlen = i;
+
+    Halfpint_UpdateSyntax(row);
 }
 
 void insertRow(int at, char *s, size_t len)
@@ -45,6 +47,7 @@ void insertRow(int at, char *s, size_t len)
 
     editor.erows[at].rlen = 0;
     editor.erows[at].render = NULL;
+    editor.erows[at].hl = NULL;
 
     updateRow(&editor.erows[at]);
 

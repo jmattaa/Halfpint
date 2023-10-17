@@ -9,6 +9,7 @@ struct dynbuf
     char *render; // the characters to render
     int len; // length of b in characters
     int rlen; // length of render characters
+    unsigned char *hl; // how the line highlighted
 };
 
 void dynbuf_Append(struct dynbuf *buffer, const char *s, int len);

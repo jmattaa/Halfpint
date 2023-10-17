@@ -9,7 +9,7 @@ objects = $(patsubst $(src)/%.c, $(obj)/%.o, $(source))
 
 INSTALL_DIR = /usr/local/bin
 
-cflags = -g
+cflags = -g 
 lflags = -g -ggdb -fsanitize=address -lm 
 
 $(exec): $(objects)

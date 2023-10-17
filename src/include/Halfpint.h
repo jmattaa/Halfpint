@@ -45,6 +45,12 @@ typedef enum
     mode_command
 } Halfpint_Mode;
 
+typedef enum
+{
+    hl_normal = 0,
+    hl_number
+} Halfpint_Highlight;
+
 // struct that contains all information for the editor
 typedef struct halfpint
 {
@@ -110,6 +116,12 @@ void Halfpint_DrawRows();
 
 // gets the window size into the `editor rows and cols`
 int Halfpint_GetWindowSize();
+
+// updates the syntax of all the file
+void Halfpint_UpdateSyntax(struct dynbuf *row);
+
+// translate the syntax to colors 
+int Halfpint_SyntaxToColors(int hl);
 
 // prompts the user for a query to find in the text
 void Halfpint_Find();
