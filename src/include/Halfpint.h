@@ -48,7 +48,8 @@ typedef enum
 typedef enum
 {
     hl_normal = 0,
-    hl_number
+    hl_number,
+    hl_match, // highlighting the founded string with find
 } Halfpint_Highlight;
 
 // struct that contains all information for the editor
@@ -133,7 +134,7 @@ void Halfpint_RunCmd();
 void Halfpint_SetStatusMessage(const char *s, ...);
 
 // propmts the user from the statusmsg bar and returns the user input
-char *Halfpint_Prompt(char *prompt); 
+char *Halfpint_Prompt(char *prompt, void (*callback)(char *, int)); 
 
 // quits the app and asks to save if file not saved
 void Halfpint_Quit();

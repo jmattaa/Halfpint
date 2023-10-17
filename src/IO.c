@@ -14,7 +14,7 @@ void Halfpint_SetStatusMessage(const char *s, ...)
 }
 
 
-char *Halfpint_Prompt(char *prompt)
+char *Halfpint_Prompt(char *prompt, void (*callback)(char *, int))
 {
     size_t inpsize = 256;
     char *inp = malloc(inpsize);
@@ -32,6 +32,7 @@ char *Halfpint_Prompt(char *prompt)
         if (c == '\x1b')
         {
             Halfpint_SetStatusMessage("");
+            if (callback) callback(inp, c);
             free(inp);
             return NULL;
         }
@@ -44,6 +45,7 @@ char *Halfpint_Prompt(char *prompt)
             if (inplen != 0)
             {
                 Halfpint_SetStatusMessage("");
+                if (callback) callback(inp, c);
                 return inp;
             }
         }
@@ -58,5 +60,7 @@ char *Halfpint_Prompt(char *prompt)
             inp[inplen++] = c;
             inp[inplen] = '\0';
         }
+
+        if (callback) callback(inp, c);
     }
 }

@@ -205,6 +205,8 @@ int Halfpint_SyntaxToColors(int hl)
     {
         case hl_number:
             return 31; // fg number red
+        case hl_match:
+            return 34; // fg match blue
         default:
             return 37; // fg default white 
     }

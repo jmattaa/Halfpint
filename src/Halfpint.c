@@ -84,7 +84,7 @@ void Halfpint_Save()
 {
     if (editor.filename == NULL)
     {
-        editor.filename = Halfpint_Prompt("Save file as: %s (Press ESC to cancel)");
+        editor.filename = Halfpint_Prompt("Save file as: %s (Press ESC to cancel)", NULL);
 
         if (editor.filename == NULL) // user canceled
         {
@@ -297,7 +297,9 @@ void Halfpint_Quit()
 {
     if (!editor.saved)
     {
-        char *ans = Halfpint_Prompt("Unsaved file. Quit without saving (y/n)? %s");
+        char *ans = Halfpint_Prompt(
+                "Unsaved file. Quit without saving (y/n)? %s", NULL
+        );
 
         if (strcmp(ans, "y") != 0)
             return;
@@ -309,12 +311,13 @@ void Halfpint_Quit()
     exit(0);
 }
 
-void Halfpint_Find()
-{
-    char *query = Halfpint_Prompt("/%s");
 
-    if (query == NULL)
+// helper function for find
+void findCallback(char *query, int key)
+{
+    if (key == '\r' || key == '\x1b') {
         return;
+    }
 
     for (int i = 0; i < editor.rownum; i++)
     {
@@ -331,17 +334,37 @@ void Halfpint_Find()
             // so when we call Halfpint_ScrollEditor we get our 
             // line in the top of the screen
             editor.rowoffset = editor.rownum;
-            
+            // set syntax for match
+            memset(&row->hl[match - row->render], hl_match, strlen(query));
+
             break;
         }
     }
+}
 
-    free(query);
+void Halfpint_Find()
+{
+    int saved_cx = editor.cursorX;
+    int saved_cy = editor.cursorY;
+    int saved_coloff = editor.coloffset;
+    int saved_rowoff = editor.rowoffset;
+
+    char *query = Halfpint_Prompt("/%s", findCallback);
+
+    if (query)
+        free(query);
+    else
+    {
+        editor.cursorY = saved_cx;
+        editor.cursorY = saved_cy;
+        editor.coloffset = saved_coloff;
+        editor.rowoffset = saved_rowoff;
+    }
 }
 
 void Halfpint_RunCmd() 
 {
-    char* cmd = Halfpint_Prompt(":%s");
+    char* cmd = Halfpint_Prompt(":%s", NULL);
 
     if(!cmd) // cancel if we dont give some command
     {
