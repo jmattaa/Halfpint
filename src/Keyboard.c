@@ -90,14 +90,6 @@ void Halfpint_ProcessKeypress()
             editor.mode = mode_normal;
         break;
 
-    case '/': // find
-        if (editor.mode == mode_normal)
-        {
-            Halfpint_Find();
-            break;
-        }
-
-
     // refresh screen
     // NOTE: screen refreshs after keypress
     case CTRL_('l'):
@@ -140,6 +132,12 @@ void Halfpint_ProcessKeypress()
             Halfpint_MoveCursor('$');
             insertNewline();
             editor.mode = mode_insert;
+            break;
+        }
+    case '/': // find
+        if (editor.mode == mode_normal)
+        {
+            Halfpint_Find();
             break;
         }
     // enter commnd mode
