@@ -185,17 +185,36 @@ void Halfpint_DrawRows()
     }
 }
 
+// update syntax helper function
+int isSeperator(int c)
+{
+    return isspace(c) || c == '\0' || strchr(",.()+-/*=~%<>[];", c) != NULL;
+}
+
 void Halfpint_UpdateSyntax(struct dynbuf *row)
 {
     row->hl = realloc(row->hl, row->rlen);
     memset(row->hl, hl_normal, row->rlen);
 
-    for (int i = 0; i < row->rlen; i++) 
+    int prev_sep = 1;
+    int i = 0;
+    while (i < row->rlen)
     {
-        if (isdigit(row->render[i])) 
+        char c = row->render[i];
+
+        unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : hl_normal;
+
+        if ((isdigit(c) && (prev_sep || prev_hl == hl_number)) || 
+                ((c == '.') && prev_hl == hl_number))
         {
             row->hl[i] = hl_number;
+            i++;
+            prev_sep = 0;
+            continue;
         }
+
+        prev_sep = isSeperator(c);
+        i++;
     }
 }
 
