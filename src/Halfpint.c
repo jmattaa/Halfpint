@@ -315,19 +315,41 @@ void Halfpint_Quit()
 // helper function for find
 void findCallback(char *query, int key)
 {
+    static int last_match = -1;
+    static int direction = 1;
+
     if (key == '\r' || key == '\x1b') {
+        last_match = -1;
+        direction = 1;
         return;
+    } else if (key == CTRL_('n')) { // next search result
+        direction = 1;
+    } else if (key == CTRL_('p')) { // previous search result
+        direction = -1;
+    } else {
+        last_match = -1;
+        direction = 1;
     }
+
+    if (last_match == -1) 
+        direction = 1;
+    int current = last_match;
 
     for (int i = 0; i < editor.rownum; i++)
     {
-        struct dynbuf *row = &editor.erows[i];
+        current += direction;
+        if (current == -1) current = editor.rownum - 1;
+        else if (current == editor.rownum) current = 0;
+
+        struct dynbuf *row = &editor.erows[current];
         char *match = strstr(row->render, query);
     
         if (match) // found match
         {
+            last_match = current;
+
             // place cursor at the match
-            editor.cursorY = i;
+            editor.cursorY = current;
             editor.cursorX = rowRxToCx(row, match - row->render);
 
             // this will scroll to the bottom
