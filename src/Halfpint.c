@@ -318,6 +318,15 @@ void findCallback(char *query, int key)
     static int last_match = -1;
     static int direction = 1;
 
+    static int saved_hl_line;
+    static char *saved_hl = NULL;
+    if (saved_hl) {
+        memcpy(editor.erows[saved_hl_line].hl, saved_hl, 
+                editor.erows[saved_hl_line].rlen);
+        free(saved_hl);
+        saved_hl = NULL;
+    }
+
     if (key == '\r' || key == '\x1b') {
         last_match = -1;
         direction = 1;
@@ -356,6 +365,11 @@ void findCallback(char *query, int key)
             // so when we call Halfpint_ScrollEditor we get our 
             // line in the top of the screen
             editor.rowoffset = editor.rownum;
+            
+
+            saved_hl_line = current;
+            saved_hl = malloc(row->rlen);
+            memcpy(saved_hl, row->hl, row->rlen);
             // set syntax for match
             memset(&row->hl[match - row->render], hl_match, strlen(query));
 
