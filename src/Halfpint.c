@@ -51,6 +51,8 @@ void Halfpint_Init()
     editor.statusmsg_time = 0;
 
     editor.saved = 1;
+
+    editor.syntax = NULL;
 }
 
 void Halfpint_OpenEditor(char *filename)

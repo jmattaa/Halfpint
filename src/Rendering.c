@@ -18,7 +18,8 @@ void drawStatusbar()
     int renderlen = snprintf(
         renderstatus,
         sizeof(renderstatus),
-        "%d:%d  -  %d%%",   // show current position and precentage of file we're in
+        "[%s]   %d:%d  -  %d%%",   // show filetype, current position and precentage of file we're in
+        editor.syntax? editor.syntax->filetype : "no filetype", // show current filetype
         editor.cursorY + 1, // current line we're on
         editor.cursorX + 1, // current column
         fprecent);

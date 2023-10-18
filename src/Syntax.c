@@ -1,5 +1,17 @@
 #include "include/Halfpint.h"
 
+const char *C_hl_filetypes[] = {".c", ".cpp", ".h", ".hpp", NULL};
+Halfpint_SyntaxDef Halfpint_HLDB[] = 
+{
+    {
+        "c",
+        C_hl_filetypes,
+        hl_number,
+    }
+};
+
+int Halfpint_HLDB_Entries = 1;
+
 // update syntax helper function
 int isSeperator(int c)
 {
@@ -11,6 +23,8 @@ void Halfpint_UpdateSyntax(struct dynbuf *row)
     row->hl = realloc(row->hl, row->rlen);
     memset(row->hl, hl_normal, row->rlen);
 
+    if (editor.syntax == NULL) return; // don't highlight if there is no detected ft
+
     int prev_sep = 1;
     int i = 0;
     while (i < row->rlen)
@@ -19,13 +33,16 @@ void Halfpint_UpdateSyntax(struct dynbuf *row)
 
         unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : hl_normal;
 
-        if ((isdigit(c) && (prev_sep || prev_hl == hl_number)) || 
-                ((c == '.') && prev_hl == hl_number))
-        {
-            row->hl[i] = hl_number;
-            i++;
-            prev_sep = 0;
-            continue;
+        // highlight number if syntax highlights number
+        if (editor.syntax->flags & hl_number) {
+            if ((isdigit(c) && (prev_sep || prev_hl == hl_number)) || 
+                    ((c == '.') && prev_hl == hl_number))
+            {
+                row->hl[i] = hl_number;
+                i++;
+                prev_sep = 0;
+                continue;
+            }
         }
 
         prev_sep = isSeperator(c);

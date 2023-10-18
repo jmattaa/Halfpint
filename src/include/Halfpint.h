@@ -38,6 +38,7 @@
 
 #define HALFPINT_TABSTOP 8
 
+// modes enum
 typedef enum
 {
     mode_normal,
@@ -45,12 +46,37 @@ typedef enum
     mode_command
 } Halfpint_Mode;
 
+
+// syntax:
+// struct containing the syntax highlight alternatives
 typedef enum
 {
     hl_normal = 0,
     hl_number,
     hl_match, // highlighting the founded string with find
 } Halfpint_Highlight;
+
+// syntax:
+// struct for filetype syntax definintion
+typedef struct 
+{
+    const char *filetype;
+    const char **filematch;
+    int flags;
+} Halfpint_SyntaxDef;
+
+// syntax:
+// array containning all the c type filetypes
+// (c, cpp, h, hpp)
+extern const char *C_hl_filetypes[];
+
+// syntax:
+// highlight database
+extern Halfpint_SyntaxDef Halfpint_HLDB[];
+
+// syntax:
+// amount of entries in HLDB
+extern int Halfpint_HLDB_Entries;
 
 // struct that contains all information for the editor
 typedef struct halfpint
@@ -74,6 +100,8 @@ typedef struct halfpint
     time_t statusmsg_time; // time of statusmsg
 
     unsigned saved : 1; // flag which keeps track wether file is saved or not
+
+    Halfpint_SyntaxDef *syntax; // the syntax definition for the file
 } Halfpint;
 
 // gets the mode in a string
