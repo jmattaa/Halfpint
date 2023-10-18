@@ -1,0 +1,5 @@
+testring syntax a 23492340 num3248 not num 
+3.14159265358979323
+
+working well
+
