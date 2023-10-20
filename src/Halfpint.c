@@ -418,6 +418,11 @@ void Halfpint_RunCmd()
     {
         Halfpint_Save();
     }
+    else if (strcmp(cmd, "wq") == 0) 
+    {
+        Halfpint_Save();
+        Halfpint_Quit();
+    }
     else
     {
         Halfpint_SetStatusMessage("Command not found");
