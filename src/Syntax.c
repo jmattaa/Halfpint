@@ -1,16 +1,22 @@
 #include "include/Halfpint.h"
 
 const char *C_hl_filetypes[] = {".c", ".cpp", ".h", ".hpp", NULL};
+const char *TXT_hl_filetypes[] = {".txt", NULL};
 Halfpint_SyntaxDef Halfpint_HLDB[] = 
 {
     {
         "c",
         C_hl_filetypes,
         hl_number,
-    }
+    }, 
+    {
+        "txt",
+        TXT_hl_filetypes,
+        hl_number,
+    },
 };
 
-int Halfpint_HLDB_Entries = 1;
+int Halfpint_HLDB_Entries = 2;
 
 // update syntax helper function
 int isSeperator(int c)
@@ -60,6 +66,32 @@ int Halfpint_SyntaxToColors(int hl)
             return 34; // fg match blue
         default:
             return 37; // fg default white 
+    }
+}
+
+void Halfpint_SyntaxDetect()
+{
+    editor.syntax = NULL;
+    // newly opened file no filetype to detect
+    if (editor.filename == NULL) return; 
+
+    char *ext = strrchr(editor.filename, '.');
+    if (!ext) return;
+    
+    for (int i = 0; i < Halfpint_HLDB_Entries; i++)
+    {
+        Halfpint_SyntaxDef *s = &Halfpint_HLDB[i];
+        int j = 0;
+        while (s->filematch[j] != NULL)
+        {
+            if (strcmp(ext, s->filematch[j]) == 0)
+            {
+                editor.syntax = s;
+                return;
+            }
+
+            j++;
+        }
     }
 }
 

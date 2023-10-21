@@ -65,18 +65,9 @@ typedef struct
     int flags;
 } Halfpint_SyntaxDef;
 
-// syntax:
-// array containning all the c type filetypes
-// (c, cpp, h, hpp)
-extern const char *C_hl_filetypes[];
 
-// syntax:
-// highlight database
-extern Halfpint_SyntaxDef Halfpint_HLDB[];
-
-// syntax:
-// amount of entries in HLDB
-extern int Halfpint_HLDB_Entries;
+// detect the filetype to apply syntax
+void Halfpint_SyntaxDetect();
 
 // struct that contains all information for the editor
 typedef struct halfpint
@@ -146,7 +137,7 @@ void Halfpint_DrawRows();
 // gets the window size into the `editor rows and cols`
 int Halfpint_GetWindowSize();
 
-// updates the syntax of all the file
+// updates the syntax of a row
 void Halfpint_UpdateSyntax(struct dynbuf *row);
 
 // translate the syntax to colors 
@@ -192,4 +183,4 @@ void delChar();
 
 extern Halfpint editor;
 
-#define HALFPINT_VERSION "0.1.0"
+#define HALFPINT_VERSION "0.1.1"

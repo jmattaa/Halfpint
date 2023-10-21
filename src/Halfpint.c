@@ -60,6 +60,8 @@ void Halfpint_OpenEditor(char *filename)
     free(editor.filename);
     editor.filename = strdup(filename);
 
+    Halfpint_SyntaxDetect();
+
     FILE *fp = fopen(filename, "r");
     if (!fp)
         die("fopen");
@@ -93,6 +95,7 @@ void Halfpint_Save()
             Halfpint_SetStatusMessage("Save canceled");
             return;
         }
+        Halfpint_SyntaxDetect();
     }
 
     int len;
