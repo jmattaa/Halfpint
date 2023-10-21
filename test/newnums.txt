@@ -1,0 +1,5 @@
+Testing a new file
+no filetype but will be txt so 3294023409 should highlight cuz it ain't doin' thant now
+
+this shouldn't highlight jdeiw349857 but this should 3.14
+

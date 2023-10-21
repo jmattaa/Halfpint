@@ -87,6 +87,11 @@ void Halfpint_SyntaxDetect()
             if (strcmp(ext, s->filematch[j]) == 0)
             {
                 editor.syntax = s;
+
+                // directly re-syntax if we change the filetype
+                for (int r = 0; r < editor.rownum; r++)
+                    Halfpint_UpdateSyntax(&editor.erows[r]);
+
                 return;
             }
 
