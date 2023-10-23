@@ -7,7 +7,7 @@ Halfpint_SyntaxDef Halfpint_HLDB[] =
     {
         "c",
         C_hl_filetypes,
-        hl_number,
+        HL_HIGHLIGHT_NUMBER | HL_HIGHLIGHT_STRING,
     }, 
     {
         "txt",
@@ -32,6 +32,8 @@ void Halfpint_UpdateSyntax(struct dynbuf *row)
     if (editor.syntax == NULL) return; // don't highlight if there is no detected ft
 
     int prev_sep = 1;
+    int in_string = 0;
+
     int i = 0;
     while (i < row->rlen)
     {
@@ -39,8 +41,41 @@ void Halfpint_UpdateSyntax(struct dynbuf *row)
 
         unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : hl_normal;
 
+        // highlight string if we syntax string
+        if (editor.syntax->flags & HL_HIGHLIGHT_STRING) 
+        {
+            if (in_string)
+            {
+                row->hl[i] = hl_string;
+                // don't let escape characters close our string
+                if (c == '\\' && i + 1 < row->rlen) 
+                {
+                    row->hl[i + 1] = hl_string;
+                    i += 2;
+                    continue;
+                }
+
+                if (c == in_string) in_string = 0;
+
+                i++;
+                prev_sep = 1;
+
+                continue;
+            }
+            else if (c == '"' || c == '\'')
+            {
+                in_string = c;
+
+                row->hl[i] = hl_string;
+                i++;
+
+                continue;
+            }
+        }
+
         // highlight number if syntax highlights number
-        if (editor.syntax->flags & hl_number) {
+        if (editor.syntax->flags & HL_HIGHLIGHT_NUMBER) 
+        {
             if ((isdigit(c) && (prev_sep || prev_hl == hl_number)) || 
                     ((c == '.') && prev_hl == hl_number))
             {
@@ -60,6 +95,8 @@ int Halfpint_SyntaxToColors(int hl)
 {
     switch (hl) 
     {
+        case hl_string:
+            return 32; // fg string green
         case hl_number:
             return 31; // fg number red
         case hl_match:

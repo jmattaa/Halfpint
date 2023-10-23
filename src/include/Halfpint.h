@@ -52,9 +52,14 @@ typedef enum
 typedef enum
 {
     hl_normal = 0,
+    hl_string,
     hl_number,
     hl_match, // highlighting the founded string with find
 } Halfpint_Highlight;
+
+// syntax in bits cuz we go brr with | operation yeye
+#define HL_HIGHLIGHT_NUMBER (1<<0)
+#define HL_HIGHLIGHT_STRING (1<<1)
 
 // syntax:
 // struct for filetype syntax definintion
