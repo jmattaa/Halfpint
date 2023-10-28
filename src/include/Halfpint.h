@@ -191,4 +191,4 @@ void delCmd();
 
 extern Halfpint editor;
 
-#define HALFPINT_VERSION "0.1.1"
+#define HALFPINT_VERSION "0.1.2"
