@@ -186,6 +186,9 @@ void delRow(int at);
 
 void delChar();
 
+// interpret delet command in normal mode
+void delCmd();
+
 extern Halfpint editor;
 
 #define HALFPINT_VERSION "0.1.1"

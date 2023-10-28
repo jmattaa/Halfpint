@@ -109,6 +109,15 @@ void Halfpint_ProcessKeypress()
             Halfpint_MoveCursor(c);
             break;
         }
+
+    // delete commands
+    case 'd':
+        if (editor.mode == mode_normal)
+        {
+            delCmd();
+            break;
+        }
+
     // write i
     case 'i':
         // go to insert mode if the mode is normal
@@ -157,4 +166,25 @@ void Halfpint_ProcessKeypress()
     }
 }
 
+void delCmd()
+{
+    // get the command 
+    int c = Halfpint_ReadKey();
+
+    // interpret command
+    switch (c)
+    {
+    case 'd':
+        delRow(editor.cursorY);
+        break;
+    case DOWN:
+        delRow(editor.cursorY);
+        delRow(editor.cursorY + 1);
+        break;
+    case UP:
+        delRow(editor.cursorY);
+        delRow(editor.cursorY - 1);
+        Halfpint_MoveCursor(UP);
+    }
+}
 
