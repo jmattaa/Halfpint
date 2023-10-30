@@ -52,6 +52,7 @@ typedef enum
 typedef enum
 {
     hl_normal = 0,
+    hl_comment,
     hl_string,
     hl_number,
     hl_match, // highlighting the founded string with find
@@ -65,8 +66,9 @@ typedef enum
 // struct for filetype syntax definintion
 typedef struct 
 {
-    const char *filetype;
-    const char **filematch;
+    char *filetype;
+    char **filematch;
+    char *singleline_comment_start;
     int flags;
 } Halfpint_SyntaxDef;
 

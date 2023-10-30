@@ -1,17 +1,19 @@
 #include "include/Halfpint.h"
 
-const char *C_hl_filetypes[] = {".c", ".cpp", ".h", ".hpp", NULL};
-const char *TXT_hl_filetypes[] = {".txt", NULL};
+char *C_hl_filetypes[] = {".c", ".cpp", ".h", ".hpp", NULL};
+char *TXT_hl_filetypes[] = {".txt", NULL};
 Halfpint_SyntaxDef Halfpint_HLDB[] = 
 {
     {
         "c",
         C_hl_filetypes,
+        "//",
         HL_HIGHLIGHT_NUMBER | HL_HIGHLIGHT_STRING,
     }, 
     {
         "txt",
         TXT_hl_filetypes,
+        NULL, // no singleline comment
         HL_HIGHLIGHT_NUMBER,
     },
 };
@@ -31,6 +33,9 @@ void Halfpint_UpdateSyntax(struct dynbuf *row)
 
     if (editor.syntax == NULL) return; // don't highlight if there is no detected ft
 
+    char *singleline_cmt = editor.syntax->singleline_comment_start;
+    int singleline_cmt_len = singleline_cmt? strlen(singleline_cmt) : 0;
+
     int prev_sep = 1;
     int in_string = 0;
 
@@ -38,8 +43,16 @@ void Halfpint_UpdateSyntax(struct dynbuf *row)
     while (i < row->rlen)
     {
         char c = row->render[i];
-
         unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : hl_normal;
+
+        if (singleline_cmt_len && !in_string)
+        {
+            if (!strncmp(&row->render[i], singleline_cmt, singleline_cmt_len)) 
+            {
+                memset(&row->hl[i], hl_comment, row->rlen - i);
+                break;
+            }
+        }
 
         // highlight string if we syntax string
         if (editor.syntax->flags & HL_HIGHLIGHT_STRING) 
@@ -95,6 +108,8 @@ int Halfpint_SyntaxToColors(int hl)
 {
     switch (hl) 
     {
+        case hl_comment:
+            return 90; // gray - bright black
         case hl_string:
             return 32; // fg string green
         case hl_number:
