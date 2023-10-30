@@ -53,6 +53,8 @@ typedef enum
 {
     hl_normal = 0,
     hl_comment,
+    hl_keyword1, 
+    hl_keyword2, 
     hl_string,
     hl_number,
     hl_match, // highlighting the founded string with find
@@ -68,6 +70,7 @@ typedef struct
 {
     char *filetype;
     char **filematch;
+    char **keywords;
     char *singleline_comment_start;
     int flags;
 } Halfpint_SyntaxDef;

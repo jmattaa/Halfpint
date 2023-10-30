@@ -1,12 +1,22 @@
 #include "include/Halfpint.h"
 
 char *C_hl_filetypes[] = {".c", ".cpp", ".h", ".hpp", NULL};
+char *C_hl_keywords[] = {
+    "switch", "if", "while", "for", "break", "continue", "return", "else",
+    "struct", "union", "typedef", "static", "enum", "class", "case",
+    //
+    // keyword endig with | is secondary keyword
+    "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
+    "void|", NULL
+};
+
 char *TXT_hl_filetypes[] = {".txt", NULL};
 Halfpint_SyntaxDef Halfpint_HLDB[] = 
 {
     {
         "c",
         C_hl_filetypes,
+        C_hl_keywords,
         "//",
         HL_HIGHLIGHT_NUMBER | HL_HIGHLIGHT_STRING,
     }, 
@@ -14,6 +24,7 @@ Halfpint_SyntaxDef Halfpint_HLDB[] =
         "txt",
         TXT_hl_filetypes,
         NULL, // no singleline comment
+        NULL, // no keywords
         HL_HIGHLIGHT_NUMBER,
     },
 };
@@ -32,6 +43,8 @@ void Halfpint_UpdateSyntax(struct dynbuf *row)
     memset(row->hl, hl_normal, row->rlen);
 
     if (editor.syntax == NULL) return; // don't highlight if there is no detected ft
+
+    char **keywords = editor.syntax->keywords;
 
     char *singleline_cmt = editor.syntax->singleline_comment_start;
     int singleline_cmt_len = singleline_cmt? strlen(singleline_cmt) : 0;
@@ -99,6 +112,34 @@ void Halfpint_UpdateSyntax(struct dynbuf *row)
             }
         }
 
+        // highlight keywords
+        if (prev_sep) 
+        {
+            int j;
+            for (j = 0; keywords[j]; j++) {
+                int klen = strlen(keywords[j]);
+                int kw2 = keywords[j][klen - 1] == '|';
+
+                if (kw2) 
+                    klen--;
+
+                if (!strncmp(&row->render[i], keywords[j], klen) &&
+                    isSeperator(row->render[i + klen])) 
+                {
+                    memset(
+                        &row->hl[i], kw2 ? hl_keyword2 : hl_keyword1, klen
+                    );
+                    i += klen;
+                    break;
+                }
+            }
+            if (keywords[j] != NULL) 
+            {
+                prev_sep = 0;
+                continue;
+            }
+        }
+
         prev_sep = isSeperator(c);
         i++;
     }
@@ -110,6 +151,10 @@ int Halfpint_SyntaxToColors(int hl)
     {
         case hl_comment:
             return 90; // gray - bright black
+        case hl_keyword1:
+            return 91; // bright red
+        case hl_keyword2:
+            return 33; // yellow
         case hl_string:
             return 32; // fg string green
         case hl_number:
