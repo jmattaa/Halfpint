@@ -12,7 +12,7 @@ Halfpint_SyntaxDef Halfpint_HLDB[] =
     {
         "txt",
         TXT_hl_filetypes,
-        hl_number,
+        HL_HIGHLIGHT_NUMBER,
     },
 };
 
