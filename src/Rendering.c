@@ -156,7 +156,7 @@ void Halfpint_DrawRows()
                 {
                     if (currentcolor != -1)
                     {
-                        dynbuf_Append(editor.buffer, "\x1b[39m", 5);
+                        dynbuf_Append(editor.buffer, "\x1b[39m\x1b[49m", 10);
                         currentcolor = -1;
                     }
 
@@ -172,13 +172,19 @@ void Halfpint_DrawRows()
                         currentcolor = color;
                         char buf[16];
                         // color the character 
-                        int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
+                        int clen = snprintf(
+                                buf, 
+                                sizeof(buf), 
+                                "\x1b[49m\x1b[%dm", 
+                                color
+                            );
+
                         dynbuf_Append(editor.buffer, buf, clen);
                     }
                     dynbuf_Append(editor.buffer, &c[j], 1);
                 }
             }
-            dynbuf_Append(editor.buffer, "\x1b[39m", 5); // reset the hl
+            dynbuf_Append(editor.buffer, "\x1b[39m\x1b[49m", 10); // reset the hl (bg and fg)
         }
 
         dynbuf_Append(editor.buffer, "\x1b[K", 3); // clear line
