@@ -143,6 +143,16 @@ void Halfpint_ProcessKeypress()
             editor.mode = mode_insert;
             break;
         }
+    case 'O':
+        // make newline above and enter insert mode
+        if (editor.mode == mode_normal)
+        {
+            Halfpint_MoveCursor('0');
+            insertNewline();
+            Halfpint_MoveCursor('k');
+            editor.mode = mode_insert;
+            break;
+        }
     case '/': // find
         if (editor.mode == mode_normal)
         {
